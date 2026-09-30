@@ -3,6 +3,7 @@ services:
   - type: web
     name: oomnieye-backend
     env: node
+    plan: free
     rootDir: backend
     buildCommand: npm install
     startCommand: npm start
@@ -20,6 +21,7 @@ services:
   - type: web
     name: oomnieye-frontend
     env: node
+    plan: free
     rootDir: frontend
     buildCommand: npm install && npm run build
     startCommand: npm start
