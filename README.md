@@ -1,7 +1,7 @@
 # Crystal Ball Command Centre - OomniEye Approvals Widget
 
 ## Overview
-This is a full-stack, monorepo implementation of the OomniEye "Approvals" assistant, built with Next.js, Node/Express, and the Anthropic API. 
+This is a full-stack, monorepo implementation of the OomniEye "Approvals" assistant, built with Next.js, Node/Express, and the OpenAI API (GPT-4o). 
 
 ## Setup & Running Locally
 
@@ -11,9 +11,9 @@ This project uses npm workspaces to manage both frontend and backend simultaneou
    ```bash
    npm install
    ```
-2. **Add your API Key**: Create a `.env` file in the root folder and add your Anthropic key:
+2. **Add your API Key**: Create a `.env` file in the root folder and add your OpenAI key:
    ```env
-   ANTHROPIC_API_KEY=your_api_key_here
+   OPENAI_API_KEY=your_api_key_here
    ```
 3. **Start the application**: Run the following command at the root to boot up both the Express API and the Next.js frontend concurrently:
    ```bash
@@ -67,8 +67,8 @@ As requested in the assignment, here is the rationale for how LLMs are applied t
 - **Structured Output**: The `summary` endpoint enforces JSON mode. The LLM response is strictly parsed through a `zod` schema (`SummaryResponseSchema`) on the backend before being relayed to the frontend. The UI never trusts or regex-parses raw text.
 - **Streaming**: Standard conversational actions (`chat`, `help`, `teach`) utilize SSE (Server-Sent Events) to stream tokens directly into the Zustand UI state.
 - **Graceful Failure**: The API enforces an `AbortController` timeout of 8s for every AI call. If the LLM stalls or the API key is removed, it degrades cleanly. Instead of a 500 error or hanging UI, it returns a 504 Timeout and the UI cleanly displays: *"Failed to reach AI. Please try again."*
-- **Rate Limiting**: `express-rate-limit` protects the backend `/api/chat` route (10 requests per minute) to prevent API abuse.
-- **Testing**: A strict test-first approach was utilized. Tests include mocked Anthropic API classes (Vitest), integration endpoint tests (Supertest), and UI loading/error state component tests (Testing Library).
+- **Rate Limiting**: `express-rate-limit` protects the backend `/api/chat` route (20 requests per 15 minutes per session IP) to prevent API abuse.
+- **Testing**: A strict test-first approach was utilized. Tests include mocked OpenAI API classes (Vitest), integration endpoint tests (Supertest), and UI loading/error state component tests (Testing Library).
 
 ---
 
