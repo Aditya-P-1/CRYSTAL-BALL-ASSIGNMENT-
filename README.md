@@ -24,6 +24,23 @@ This project uses npm workspaces to manage both frontend and backend simultaneou
    http://localhost:3000
    ```
 
+### Running Frontend and Backend Separately
+If you prefer to run the frontend and backend in separate terminal tabs (for example, to see their logs independently), you can do so easily thanks to npm workspaces.
+
+**Terminal 1 (Backend):**
+```bash
+npm run dev -w backend
+```
+*(This will start the Express API on port 3001 using nodemon)*
+
+**Terminal 2 (Frontend):**
+```bash
+npm run dev -w frontend
+```
+*(This will start the Next.js UI on port 3000)*
+
+---
+
 5. **Testing**: To run the full test suite (backend integration/unit + frontend component):
    ```bash
    npm run test
