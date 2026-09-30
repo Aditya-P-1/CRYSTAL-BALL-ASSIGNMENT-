@@ -43,8 +43,6 @@ export default function ApprovalsPanel() {
           <h3 className="header-title">Approvals</h3>
         </div>
         <div className="header-icons">
-          <span className="icon">ⓘ</span>
-          <span className="icon">⤢</span>
           <button className="close-btn" onClick={() => setIsOpen(false)}>✕</button>
         </div>
       </div>
@@ -145,11 +143,7 @@ export default function ApprovalsPanel() {
         </form>
       )}
 
-      {/* Footer */}
-      <div className="panel-footer">
 
-        <a href="#" className="footer-link">HMS Panel ↗</a>
-      </div>
     </div>
   );
 }
