@@ -1,1 +1,12 @@
-{"name": "oomnieye-monorepo", "private": true, "workspaces": ["frontend", "backend", "ai"]}
+{
+  "name": "oomnieye-monorepo",
+  "private": true,
+  "workspaces": ["frontend", "backend"],
+  "scripts": {
+    "dev": "concurrently \"npm run dev -w frontend\" \"npm run dev -w backend\"",
+    "test": "npm run test -w backend && npm run test -w frontend"
+  },
+  "devDependencies": {
+    "concurrently": "^9.0.1"
+  }
+}
