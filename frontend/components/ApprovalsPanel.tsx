@@ -37,14 +37,24 @@ export default function ApprovalsPanel() {
       {/* Header */}
       <div className="panel-header">
         <div className="avatar-section">
-          <div className="avatar">O</div>
-          <div>
-            <h3>OomniEye Assistant</h3>
-            <span className="status">Online</span>
+          <div className="avatar-circle">
+             <img src="/talk.png" alt="Avatar" className="header-avatar-img" />
           </div>
+          <h3 className="header-title">Approvals</h3>
         </div>
-        <button className="close-btn" onClick={() => setIsOpen(false)}>
-          <X size={20} />
+        <div className="header-icons">
+          <span className="icon">ⓘ</span>
+          <span className="icon">⤢</span>
+          <button className="close-btn" onClick={() => setIsOpen(false)}>✕</button>
+        </div>
+      </div>
+
+      <div className="panel-subheader">
+        <div className="sub-left">
+          <span className="home-icon">⌂</span> Approvals
+        </div>
+        <button className="replay-greeting-btn" onClick={() => handleAction('greeting')}>
+          Replay Greeting
         </button>
       </div>
 
@@ -53,26 +63,22 @@ export default function ApprovalsPanel() {
         
         {/* Default Actions (only show if no chat history or summary) */}
         {messages.length === 0 && !summaryData && (
-          <div className="action-cards">
-            <button className="action-card" onClick={() => handleAction('summary')}>
-              <Play size={18} />
+          <div className="action-grid">
+            <button className="action-card-grid" onClick={() => handleAction('summary')}>
+              <img src="/summary.png" alt="Summary" />
               <span>Present me Summary</span>
             </button>
-            <button className="action-card" onClick={() => handleAction('chat')}>
-              <MessageSquare size={18} />
+            <button className="action-card-grid" onClick={() => handleAction('chat')}>
+              <img src="/talk.png" alt="Talk" />
               <span>Talk to me</span>
             </button>
-            <button className="action-card" onClick={() => handleAction('help')}>
-              <HelpCircle size={18} />
+            <button className="action-card-grid" onClick={() => handleAction('help')}>
+              <img src="/help.png" alt="Help" />
               <span>Help me</span>
             </button>
-            <button className="action-card" onClick={() => handleAction('teach')}>
-              <BookOpen size={18} />
+            <button className="action-card-grid" onClick={() => handleAction('teach')}>
+              <img src="/teach.png" alt="Teach" />
               <span>Teach me</span>
-            </button>
-            <button className="action-card" onClick={() => handleAction('greeting')}>
-              <RotateCcw size={18} />
-              <span>Replay Greeting</span>
             </button>
           </div>
         )}
@@ -129,6 +135,12 @@ export default function ApprovalsPanel() {
           <button type="submit" disabled={isLoading || !inputText.trim()}>Send</button>
         </form>
       )}
+
+      {/* Footer */}
+      <div className="panel-footer">
+        <span className="footer-left">26 folders / items</span>
+        <a href="#" className="footer-link">HMS Panel ↗</a>
+      </div>
     </div>
   );
 }
