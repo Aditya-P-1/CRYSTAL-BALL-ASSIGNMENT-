@@ -2,14 +2,16 @@ import axios from 'axios';
 
 // Dynamic API Base URL resolution
 export const getBackendUrl = (): string => {
-  if (process.env.NEXT_PUBLIC_BACKEND_URL) {
-    return process.env.NEXT_PUBLIC_BACKEND_URL;
+  let url = process.env.NEXT_PUBLIC_BACKEND_URL || '';
+  if (url && !url.startsWith('http://') && !url.startsWith('https://')) {
+    url = `https://${url}`;
   }
-  if (typeof window !== 'undefined') {
+  if (!url && typeof window !== 'undefined') {
     return ''; // Relative path (/api/chat) using Next.js route proxy
   }
-  return 'http://localhost:5000';
+  return url || 'http://localhost:5000';
 };
+
 
 // Create Axios Instance
 export const apiClient = axios.create({
