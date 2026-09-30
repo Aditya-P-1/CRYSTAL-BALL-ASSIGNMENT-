@@ -3,6 +3,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import { PROMPTS_V1, SummaryResponseSchema } from '@/prompts/v1';
 import { ChatRequestSchema } from '@/schemas/api';
 import { APPROVAL_POLICY } from '@/data/policy';
+import { retrieveRelevantChunks } from '@/utils/rag';
 import { RateLimiter } from '@/utils/rate-limiter';
 import queueData from '@/data/queue.json';
 
@@ -90,7 +91,8 @@ export async function POST(req: NextRequest) {
       } else if (action === 'teach') {
         systemPrompt = PROMPTS_V1.teach;
       } else if (action === 'help') {
-        systemPrompt = `${PROMPTS_V1.help}\n\nReference Document:\n${APPROVAL_POLICY}`;
+        const relevantContext = retrieveRelevantChunks(userPrompt || '').join('\n\n');
+        systemPrompt = `${PROMPTS_V1.help}\n\nReference Document Snippets:\n${relevantContext}`;
       } else if (action === 'greeting') {
         systemPrompt = PROMPTS_V1.greeting;
         userPrompt = `Queue Context: ${JSON.stringify(queueData)}`;
