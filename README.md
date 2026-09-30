@@ -24,18 +24,21 @@ This project uses npm workspaces to manage both frontend and backend simultaneou
    http://localhost:3000
    ```
 
+### Folder Structure & Monorepo
+This project is a true Monorepo. All frontend Next.js code is isolated in the `frontend/` workspace, and all backend Express logic, RAG data, policy documents, and AI prompts are correctly encapsulated within the `backend/` workspace.
+
 ### Running Frontend and Backend Separately
-If you prefer to run the frontend and backend in separate terminal tabs (for example, to see their logs independently), you can do so easily thanks to npm workspaces.
+If you prefer to run the frontend and backend in separate terminal tabs (for example, to see their logs independently), you can use the shortcut scripts we created:
 
 **Terminal 1 (Backend):**
 ```bash
-npm run dev -w backend
+npm run backend
 ```
 *(This will start the Express API on port 3001 using nodemon)*
 
 **Terminal 2 (Frontend):**
 ```bash
-npm run dev -w frontend
+npm run frontend
 ```
 *(This will start the Next.js UI on port 3000)*
 
@@ -69,6 +72,11 @@ As requested in the assignment, here is the rationale for how LLMs are applied t
 - **Graceful Failure**: The API enforces an `AbortController` timeout of 8s for every AI call. If the LLM stalls or the API key is removed, it degrades cleanly. Instead of a 500 error or hanging UI, it returns a 504 Timeout and the UI cleanly displays: *"Failed to reach AI. Please try again."*
 - **Rate Limiting**: `express-rate-limit` protects the backend `/api/chat` route (20 requests per 15 minutes per session IP) to prevent API abuse.
 - **Testing**: A strict test-first approach was utilized. Tests include mocked OpenAI API classes (Vitest), integration endpoint tests (Supertest), and UI loading/error state component tests (Testing Library).
+
+---
+
+## What I'd do differently with more time
+If given an extra day, I would improve the **State Management and Caching**: currently, Zustand holds the session state, but navigating away and back resets the chat unless strictly persisted. I would implement `React Query` alongside a persistent backend session store (e.g., Redis) so an operator's conversation history is fully recoverable if they refresh the tab or return to a specific approval ticket hours later. I would also add strict Zod validation on the frontend to re-verify the structured JSON before rendering.
 
 ---
 

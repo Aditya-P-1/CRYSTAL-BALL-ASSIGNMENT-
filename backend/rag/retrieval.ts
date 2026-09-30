@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 
-const policyPath = path.join(__dirname, '../../policy/approval-policy.md');
+const policyPath = path.join(__dirname, '../policy/approval-policy.md');
 const APPROVAL_POLICY = fs.existsSync(policyPath) ? fs.readFileSync(policyPath, 'utf8') : '';
 const chunks = APPROVAL_POLICY.split('\n\n').filter(c => c.trim().length > 0);
 

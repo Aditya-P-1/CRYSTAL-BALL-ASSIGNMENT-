@@ -4,17 +4,17 @@ import fs from 'fs';
 import path from 'path';
 import { ChatRequestSchema, SummaryResponseSchema } from '../schemas/api';
 import { retrieveRelevantChunks } from '../rag/retrieval';
-import { summaryPromptV1 } from '../../prompts/summary';
-import { chatPromptV1 } from '../../prompts/chat';
-import { helpPromptV1 } from '../../prompts/help';
-import { teachPromptV1 } from '../../prompts/teach';
-import { greetingPromptV1 } from '../../prompts/greeting';
+import { summaryPromptV1 } from '../prompts/summary';
+import { chatPromptV1 } from '../prompts/chat';
+import { helpPromptV1 } from '../prompts/help';
+import { teachPromptV1 } from '../prompts/teach';
+import { greetingPromptV1 } from '../prompts/greeting';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY || 'dummy_key_for_tests',
 });
 
-const queuePath = path.join(__dirname, '../../data/approvals.json');
+const queuePath = path.join(__dirname, '../data/approvals.json');
 const queueData = fs.existsSync(queuePath) ? JSON.parse(fs.readFileSync(queuePath, 'utf8')) : [];
 
 export const handleChat = async (req: Request, res: Response): Promise<any> => {

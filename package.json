@@ -3,7 +3,9 @@
   "private": true,
   "workspaces": ["frontend", "backend"],
   "scripts": {
-    "dev": "concurrently \"npm run dev -w frontend\" \"npm run dev -w backend\"",
+    "dev": "concurrently \"npm run backend\" \"npm run frontend\"",
+    "frontend": "npm run dev -w frontend",
+    "backend": "npm run dev -w backend",
     "test": "npm run test -w backend && npm run test -w frontend"
   },
   "devDependencies": {
