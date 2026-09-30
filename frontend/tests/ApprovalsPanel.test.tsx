@@ -1,6 +1,8 @@
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import ApprovalsPanel from '../components/ApprovalsPanel';
 import { useChatStore } from '../store/useChatStore';
+
 
 // Mock Zustand store
 vi.mock('../store/useChatStore', () => ({
