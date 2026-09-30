@@ -2,21 +2,27 @@ import { describe, it, expect, vi } from 'vitest';
 import request from 'supertest';
 import app from '../app';
 
-// Mock Anthropic
-vi.mock('@anthropic-ai/sdk', () => {
+// Mock OpenAI
+vi.mock('openai', () => {
   return {
     default: class {
-      messages = {
-        create: vi.fn().mockImplementation(async (params, options) => {
-          if (options?.signal?.aborted) {
-            const err = new Error('aborted');
-            err.name = 'AbortError';
-            throw err;
-          }
-          return {
-            content: [{ type: 'text', text: '{"summary":"Test summary","urgentItems":["Item 1"],"recommendedAction":"Do it"}' }]
-          };
-        })
+      chat = {
+        completions: {
+          create: vi.fn().mockImplementation(async (params, options) => {
+            if (options?.signal?.aborted) {
+              const err = new Error('aborted');
+              err.name = 'AbortError';
+              throw err;
+            }
+            return {
+              choices: [{
+                message: {
+                  content: '{"summary":"Test summary","urgentItems":["Item 1"],"recommendedAction":"Do it"}'
+                }
+              }]
+            };
+          })
+        }
       };
     }
   };
