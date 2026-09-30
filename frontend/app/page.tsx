@@ -76,7 +76,7 @@ export default function Home() {
 
           {/* Approvals Section */}
           <div style={{ background: 'white', borderRadius: '16px', border: '1px solid #e2e8f0', overflow: 'hidden', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '20px 24px', borderBottom: '1px solid #e2e8f0', alignItems: 'center', background: '#fafaf9' }}>
+            <div className="approvals-header" style={{ display: 'flex', justifyContent: 'space-between', padding: '20px 24px', borderBottom: '1px solid #e2e8f0', alignItems: 'center', background: '#fafaf9' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <List size={20} color="#8b5cf6" />
                 <h3 style={{ margin: 0, fontSize: '0.9rem', fontWeight: 700, color: '#334155', letterSpacing: '0.5px' }}>PENDING APPROVAL REQUESTS</h3>
@@ -116,7 +116,7 @@ export default function Home() {
                   ) : (
                     filteredData.map((item, idx) => (
                       <tr key={idx} className="table-row" style={{ borderBottom: idx !== filteredData.length - 1 ? '1px solid #f1f5f9' : 'none', transition: 'background 0.2s' }}>
-                        <td style={{ padding: '20px 24px', display: 'flex', gap: '16px', alignItems: 'flex-start' }}>
+                        <td data-label="FOLDER / CONTENT NAME" style={{ padding: '20px 24px', display: 'flex', gap: '16px', alignItems: 'flex-start' }}>
                           <div style={{ color: item.type === 'Folder' ? '#f59e0b' : item.type === 'Video' ? '#ef4444' : item.type === 'PDF' ? '#3b82f6' : '#10b981', background: item.type === 'Folder' ? '#fef3c7' : item.type === 'Video' ? '#fee2e2' : item.type === 'PDF' ? '#dbeafe' : '#d1fae5', padding: '10px', borderRadius: '10px' }}>
                             {item.type === 'Folder' ? <Folder size={20} /> : item.type === 'Video' ? <Video size={20} /> : item.type === 'PDF' ? <FileText size={20} /> : <ImageIcon size={20} />}
                           </div>
@@ -125,19 +125,19 @@ export default function Home() {
                             <div style={{ color: '#64748b', fontSize: '0.8rem', marginTop: '6px' }}>{item.subtitle}</div>
                           </div>
                         </td>
-                        <td style={{ padding: '20px 24px' }}>
+                        <td data-label="TYPE" style={{ padding: '20px 24px' }}>
                           <span style={{ border: '1px solid #e2e8f0', background: 'white', padding: '6px 10px', borderRadius: '6px', fontSize: '0.8rem', color: '#475569', display: 'inline-flex', alignItems: 'center', gap: '6px', fontWeight: 500 }}>
                             {item.type === 'Folder' ? <Folder size={14} color="#94a3b8" /> : item.type === 'Video' ? <Video size={14} color="#94a3b8" /> : item.type === 'PDF' ? <FileText size={14} color="#94a3b8" /> : <ImageIcon size={14} color="#94a3b8" />} {item.type}
                           </span>
                         </td>
-                        <td style={{ padding: '20px 24px', color: '#475569', fontSize: '0.9rem', fontWeight: 500, whiteSpace: 'nowrap' }}>{item.submitter}</td>
-                        <td style={{ padding: '20px 24px', color: '#64748b', fontSize: '0.9rem', whiteSpace: 'nowrap' }}>{item.date}</td>
-                        <td style={{ padding: '20px 24px', whiteSpace: 'nowrap' }}>
+                        <td data-label="SUBMITTED BY" style={{ padding: '20px 24px', color: '#475569', fontSize: '0.9rem', fontWeight: 500, whiteSpace: 'nowrap' }}>{item.submitter}</td>
+                        <td data-label="DATE" style={{ padding: '20px 24px', color: '#64748b', fontSize: '0.9rem', whiteSpace: 'nowrap' }}>{item.date}</td>
+                        <td data-label="STATUS" style={{ padding: '20px 24px', whiteSpace: 'nowrap' }}>
                           <span style={{ background: '#fff7ed', border: '1px solid #ffedd5', color: '#c2410c', padding: '6px 14px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 600, display: 'inline-block' }}>
                             {item.status}
                           </span>
                         </td>
-                        <td style={{ padding: '20px 24px', color: '#cbd5e1', textAlign: 'right' }}>
+                        <td data-label="ACTION" style={{ padding: '20px 24px', color: '#cbd5e1', textAlign: 'right' }}>
                           <MoreVertical size={20} style={{ cursor: 'pointer' }} className="icon-btn" />
                         </td>
                       </tr>
