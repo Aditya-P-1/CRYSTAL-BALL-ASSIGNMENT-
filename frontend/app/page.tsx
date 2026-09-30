@@ -3,13 +3,16 @@
 import React, { useState } from 'react';
 import ApprovalsPanel from '@/components/ApprovalsPanel';
 import { Folder, Video, FileText, Image as ImageIcon, MoreVertical, Search, ArrowLeft, RotateCcw, MessageSquare, Settings, Bell, LayoutGrid, List, ChevronDown } from 'lucide-react';
+import approvalsRaw from '../../backend/data/approvals.json';
 
-const MOCK_DATA = [
-  { title: "Site Patrol Onboarding & Checklists", subtitle: "My Site Patrol > My Site Patrol Card", type: "Folder", submitter: "Sam HelpAdmin", date: "Sep 18", status: "Pending Review" },
-  { title: "Level 2 Drone Patrol Video Demo...", subtitle: "Drawing-Videos > Drawing-Videos Card", type: "Video", submitter: "Alex HelpAdmin", date: "Sep 18", status: "Pending Review" },
-  { title: "Safety Equipment & Sensor Specs ...", subtitle: "Site Recordings > Site Recordings", type: "PDF", submitter: "Sam HelpAdmin", date: "Sep 18", status: "Pending Review" },
-  { title: "360° Spatial Zone Layout & Camera...", subtitle: "Site Recordings > Site Recordings", type: "Image", submitter: "Elena HelpAdmin", date: "Sep 18", status: "Pending Review" }
-];
+const MOCK_DATA = approvalsRaw.map((item: any) => ({
+  title: item.Item,
+  subtitle: item.Type === 'Folder' ? 'My Site Patrol > My Site Patrol Card' : item.Type === 'Video' ? 'Drawing-Videos > Drawing-Videos Card' : 'Site Recordings > Site Recordings',
+  type: item.Type,
+  submitter: item["Submitted by"],
+  date: item.Status.split(' — ')[1] || 'Sep 18',
+  status: item.Status.split(' — ')[0] || 'Pending Review'
+}));
 
 export default function Home() {
   const [searchQuery, setSearchQuery] = useState('');

@@ -1,11 +1,20 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useChatStore } from '@/store/useChatStore';
 import { X, Play, MessageSquare, HelpCircle, BookOpen, RotateCcw } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
 
 export default function ApprovalsPanel() {
   const { messages, isLoading, error, summaryData, triggerAction, resetChat } = useChatStore();
   const [isOpen, setIsOpen] = useState(true);
   const [inputText, setInputText] = useState('');
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const contentEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (contentEndRef.current && typeof contentEndRef.current.scrollIntoView === 'function') {
+      contentEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages, error, summaryData, isLoading]);
 
   if (!isOpen) {
     return (
@@ -27,9 +36,28 @@ export default function ApprovalsPanel() {
     e.preventDefault();
     if (!inputText.trim()) return;
 
-    // Determine context based on what we are doing, but default to 'chat'
     triggerAction('chat', inputText);
     setInputText('');
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+    }
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setInputText(e.target.value);
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 120)}px`;
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      if (inputText.trim() && !isLoading) {
+        handleSend(e);
+      }
+    }
   };
 
   return (
@@ -91,9 +119,11 @@ export default function ApprovalsPanel() {
         )}
 
         {/* Loading and Error States */}
-        {isLoading && <div className="loading" data-testid="loading-indicator">
-          <div className="spinner"></div> Assistant is thinking...
-        </div>}
+        {isLoading && messages.length === 0 && (
+          <div className="loading" data-testid="loading-indicator">
+            <div className="spinner"></div> Assistant is thinking...
+          </div>
+        )}
 
         {error && <div className="error">
           <strong>Error:</strong> {error}
@@ -120,23 +150,44 @@ export default function ApprovalsPanel() {
         {/* Chat History */}
         {messages.length > 0 && (
           <div className="chat-history">
-            {messages.map((msg) => (
-              <div key={msg.id} className={`message ${msg.role}`}>
-                {msg.content}
-              </div>
-            ))}
+            {messages.map((msg, idx) => {
+              const isLast = idx === messages.length - 1;
+              const isStreamingThis = isLast && msg.role === 'assistant' && isLoading;
+              return (
+                <div key={msg.id} className={`message ${msg.role}`}>
+                  {msg.role === 'assistant' ? (
+                    <div className="markdown-content">
+                      <ReactMarkdown>{msg.content}</ReactMarkdown>
+                      {isStreamingThis && (
+                        <span className="typing-dots" aria-label="AI is typing">
+                          <span />
+                          <span />
+                          <span />
+                        </span>
+                      )}
+                    </div>
+                  ) : (
+                    msg.content
+                  )}
+                </div>
+              );
+            })}
           </div>
         )}
+
+        <div ref={contentEndRef} />
       </div>
 
       {/* Input Area */}
       {(messages.length > 0 || summaryData) && (
         <form className="chat-input" onSubmit={handleSend}>
-          <input
-            type="text"
+          <textarea
+            ref={textareaRef}
+            rows={1}
             placeholder="Type your question..."
             value={inputText}
-            onChange={(e) => setInputText(e.target.value)}
+            onChange={handleInputChange}
+            onKeyDown={handleKeyDown}
             disabled={isLoading}
           />
           <button type="submit" disabled={isLoading || !inputText.trim()}>Send</button>

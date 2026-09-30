@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { streamChatAPI } from '../services/api';
 
 export interface ChatMessage {
   id: string;
@@ -29,59 +30,59 @@ export const useChatStore = create<ChatState>((set, get) => ({
   triggerAction: async (action, message) => {
     set({ isLoading: true, error: null, summaryData: null });
     
+    let assistantMessageId: string | null = null;
+
     // Optimistic UI for user message
     if (message) {
       get().addMessage({ id: Date.now().toString(), role: 'user', content: message });
     }
 
-    try {
-      const history = get().messages.map(m => ({ role: m.role, content: m.content }));
-      
-      const res = await fetch('http://localhost:3001/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action, message, history }),
-      });
-
-      if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}));
-        throw new Error(errorData.error || `Failed with status ${res.status}`);
-      }
-
-      // Check if JSON response (like summary)
-      const contentType = res.headers.get('content-type') || '';
-      if (contentType.includes('application/json')) {
-        const data = await res.json();
-        set({ summaryData: data.data, isLoading: false });
-        return;
-      }
-
-      // Streaming response
-      const assistantMessageId = Date.now().toString() + '-assistant';
+    if (action !== 'summary') {
+      assistantMessageId = Date.now().toString() + '-assistant';
       get().addMessage({ id: assistantMessageId, role: 'assistant', content: '' });
+    }
 
-      const reader = res.body?.getReader();
-      const decoder = new TextDecoder();
+    try {
+      const history = get().messages
+        .filter((m) => m.id !== assistantMessageId)
+        .map((m) => ({ role: m.role as 'user' | 'assistant', content: m.content }));
 
-      if (reader) {
-        set({ isLoading: false }); // Start streaming, no longer "loading" initial byte
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          
-          const chunk = decoder.decode(value, { stream: true });
-          
-          set((state) => {
-            const newMessages = [...state.messages];
-            const lastMessage = newMessages[newMessages.length - 1];
-            if (lastMessage && lastMessage.id === assistantMessageId) {
-              lastMessage.content += chunk;
-            }
-            return { messages: newMessages };
-          });
+      const jsonResult = await streamChatAPI(
+        { action, message, history },
+        (chunk) => {
+          set((state) => ({
+            messages: state.messages.map((msg) =>
+              msg.id === assistantMessageId
+                ? { ...msg, content: msg.content + chunk }
+                : msg
+            )
+          }));
         }
+      );
+
+      if (jsonResult) {
+        if (assistantMessageId) {
+          set((state) => ({
+            messages: state.messages.filter((m) => m.id !== assistantMessageId)
+          }));
+        }
+        if (jsonResult.error) {
+          throw new Error(jsonResult.error);
+        }
+        if (jsonResult.data) {
+          set({ summaryData: jsonResult.data, isLoading: false });
+        } else {
+          set({ isLoading: false });
+        }
+      } else {
+        set({ isLoading: false });
       }
     } catch (error: any) {
+      if (assistantMessageId) {
+        set((state) => ({
+          messages: state.messages.filter((m) => m.id !== assistantMessageId || m.content.trim() !== '')
+        }));
+      }
       set({ 
         error: error.message || 'The AI assistant is temporarily unavailable. Please refer to manual documentation.',
         isLoading: false 
@@ -89,3 +90,4 @@ export const useChatStore = create<ChatState>((set, get) => ({
     }
   }
 }));
+

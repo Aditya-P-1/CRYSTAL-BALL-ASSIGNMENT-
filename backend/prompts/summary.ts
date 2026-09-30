@@ -6,4 +6,9 @@ Prioritize by urgency. Follow these strict priority rules:
 - Spatial Zone Layouts (Images): Medium Priority
 - Onboarding & Checklists (Folders): Low Priority
 
-Return your response ONLY as valid JSON matching the provided schema, with no markdown formatting or extra text.`;
+Return your response ONLY as valid JSON matching the following schema, with no markdown formatting or extra text:
+{
+  "summary": "A concise 1-2 sentence overview of the queue",
+  "urgentItems": ["List of items needing immediate attention"],
+  "recommendedAction": "What the operator should do first"
+}`;

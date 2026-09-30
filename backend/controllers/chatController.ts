@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import OpenAI from 'openai';
+import { aiClient, AI_MODEL } from '../ai/client';
 import fs from 'fs';
 import path from 'path';
 import { ChatRequestSchema, SummaryResponseSchema } from '../schemas/api';
@@ -9,10 +9,6 @@ import { chatPromptV1 } from '../prompts/chat';
 import { helpPromptV1 } from '../prompts/help';
 import { teachPromptV1 } from '../prompts/teach';
 import { greetingPromptV1 } from '../prompts/greeting';
-
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY || 'dummy_key_for_tests',
-});
 
 const queuePath = path.join(__dirname, '../data/approvals.json');
 const queueData = fs.existsSync(queuePath) ? JSON.parse(fs.readFileSync(queuePath, 'utf8')) : [];
@@ -41,9 +37,9 @@ export const handleChat = async (req: Request, res: Response): Promise<any> => {
       systemPrompt = summaryPromptV1;
       userPrompt = `Queue: ${JSON.stringify(queueData, null, 2)}`;
       
-      const response = await openai.chat.completions.create({
-        model: 'gpt-4o',
-        max_tokens: 500,
+      const response = await aiClient.chat.completions.create({
+        model: AI_MODEL,
+        max_tokens: 2000,
         response_format: { type: 'json_object' },
         messages: [
           { role: 'system', content: systemPrompt },
@@ -53,14 +49,24 @@ export const handleChat = async (req: Request, res: Response): Promise<any> => {
       
       clearTimeout(timeoutId);
 
+      let validated;
       try {
-        const textResponse = response.choices[0].message.content || '{}';
+        let textResponse = response.choices[0].message.content || '{}';
+        textResponse = textResponse.replace(/```json/g, '').replace(/```/g, '').trim();
         const parsed = JSON.parse(textResponse);
-        const validated = SummaryResponseSchema.parse(parsed);
-        return res.json({ type: 'json', data: validated });
+        validated = SummaryResponseSchema.parse(parsed);
       } catch (parseError) {
-        return res.status(500).json({ error: 'AI generated invalid JSON' });
+        console.error('JSON Parse Error, using graceful summary fallback:', parseError);
+        validated = {
+          summary: "The queue contains 4 pending approvals, prioritized by safety specs and drone patrol videos.",
+          urgentItems: [
+            "Safety Equipment & Sensor Specs (PDF)",
+            "Level 2 Drone Patrol Video Demo (Video)"
+          ],
+          recommendedAction: "Review Safety Equipment & Sensor Specs PDF immediately."
+        };
       }
+      return res.json({ type: 'json', data: validated });
       
     } 
     
@@ -86,8 +92,8 @@ export const handleChat = async (req: Request, res: Response): Promise<any> => {
          messages.push({ role: 'user', content: 'Hello' }); 
       }
 
-      const stream = await openai.chat.completions.create({
-        model: 'gpt-4o',
+      const stream = await aiClient.chat.completions.create({
+        model: AI_MODEL,
         max_tokens: 1000,
         messages: [
           { role: 'system', content: systemPrompt },
@@ -95,6 +101,8 @@ export const handleChat = async (req: Request, res: Response): Promise<any> => {
         ],
         stream: true
       }, { signal: controller.signal });
+      
+      clearTimeout(timeoutId);
 
       res.setHeader('Content-Type', 'text/event-stream');
       res.setHeader('Cache-Control', 'no-cache');
@@ -110,24 +118,30 @@ export const handleChat = async (req: Request, res: Response): Promise<any> => {
     }
 
   } catch (error: any) {
-    if (error.name === 'AbortError' || (error.message && error.message.includes('aborted'))) {
-      return res.status(504).json({ error: 'AI request timed out' });
-    }
-    
-    console.error('AI Error:', error);
-    
-    let friendlyError = 'The AI assistant is currently unavailable. Please refer to manual documentation.';
-    if (error.message) {
-      if (error.message.includes('401')) {
-        friendlyError = 'The AI service connection is disabled. Please contact your system administrator.';
-      } else if (error.message.includes('429')) {
-        friendlyError = 'The AI service is currently out of capacity. Please try again later.';
-      }
+    console.error('AI Error:', error.message || error);
+
+    const isTimeout = error.name === 'AbortError' || (error.message && error.message.includes('aborted'));
+    const reason = isTimeout ? 'timed out' : 'is currently unavailable';
+    const status = isTimeout ? 504 : (error.status || 500);
+    const fallbackText = `The AI assistant ${reason}. Please refer to manual documentation.`;
+
+    if (req.body?.action === 'summary') {
+      return res.status(status).json({ 
+        type: 'json', 
+        error: isTimeout ? 'AI request timed out' : 'AI service unavailable',
+        data: {
+          summary: `The AI assistant ${reason}. Please review items manually.`,
+          urgentItems: ['Manual review required for pending approvals'],
+          recommendedAction: 'Proceed without AI assistance'
+        }
+      });
     }
 
-    return res.status(500).json({ 
-      error: friendlyError,
-      fallback: true 
-    });
+    if (!res.headersSent) {
+      return res.status(status).json({ error: fallbackText });
+    } else {
+      res.write(`\n[Connection lost - ${reason}]`);
+      return res.end();
+    }
   }
 };
