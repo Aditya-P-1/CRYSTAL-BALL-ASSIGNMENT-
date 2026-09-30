@@ -9,7 +9,7 @@ export default function ApprovalsPanel() {
 
   if (!isOpen) {
     return (
-      <button 
+      <button
         className="chat-toggle-btn"
         onClick={() => setIsOpen(true)}
       >
@@ -26,7 +26,7 @@ export default function ApprovalsPanel() {
   const handleSend = (e: React.FormEvent) => {
     e.preventDefault();
     if (!inputText.trim()) return;
-    
+
     // Determine context based on what we are doing, but default to 'chat'
     triggerAction('chat', inputText);
     setInputText('');
@@ -38,7 +38,7 @@ export default function ApprovalsPanel() {
       <div className="panel-header">
         <div className="avatar-section">
           <div className="avatar-circle">
-             <img src="/talk.png" alt="Avatar" className="header-avatar-img" />
+            <img src="/talk.png" alt="Avatar" className="header-avatar-img" />
           </div>
           <h3 className="header-title">Approvals</h3>
         </div>
@@ -50,8 +50,17 @@ export default function ApprovalsPanel() {
       </div>
 
       <div className="panel-subheader">
-        <div className="sub-left">
-          <span className="home-icon">⌂</span> Approvals
+        <div className="sub-left" style={{ display: 'flex', alignItems: 'center' }}>
+          {(messages.length > 0 || summaryData) ? (
+            <button
+              onClick={resetChat}
+              style={{ border: 'none', background: 'transparent', cursor: 'pointer', color: '#475569', display: 'flex', alignItems: 'center', fontSize: '13px', fontWeight: '500' }}
+            >
+              <span style={{ marginRight: '6px', fontSize: '16px' }}>←</span> Back
+            </button>
+          ) : (
+            <><span className="home-icon">⌂</span> Approvals</>
+          )}
         </div>
         <button className="replay-greeting-btn" onClick={() => handleAction('greeting')}>
           Replay Greeting
@@ -60,7 +69,7 @@ export default function ApprovalsPanel() {
 
       {/* Main Content Area */}
       <div className="panel-content">
-        
+
         {/* Default Actions (only show if no chat history or summary) */}
         {messages.length === 0 && !summaryData && (
           <div className="action-grid">
@@ -87,7 +96,7 @@ export default function ApprovalsPanel() {
         {isLoading && <div className="loading" data-testid="loading-indicator">
           <div className="spinner"></div> Assistant is thinking...
         </div>}
-        
+
         {error && <div className="error">
           <strong>Error:</strong> {error}
         </div>}
@@ -125,9 +134,9 @@ export default function ApprovalsPanel() {
       {/* Input Area */}
       {(messages.length > 0 || summaryData) && (
         <form className="chat-input" onSubmit={handleSend}>
-          <input 
-            type="text" 
-            placeholder="Type your question..." 
+          <input
+            type="text"
+            placeholder="Type your question..."
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
             disabled={isLoading}
@@ -138,7 +147,7 @@ export default function ApprovalsPanel() {
 
       {/* Footer */}
       <div className="panel-footer">
-        <span className="footer-left">26 folders / items</span>
+
         <a href="#" className="footer-link">HMS Panel ↗</a>
       </div>
     </div>

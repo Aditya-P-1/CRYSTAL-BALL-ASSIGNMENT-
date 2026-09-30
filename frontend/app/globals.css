@@ -1,19 +1,19 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 :root {
-  --bg-color: #0f1115;
-  --panel-bg: rgba(23, 25, 30, 0.7);
-  --panel-border: rgba(255, 255, 255, 0.08);
-  --text-primary: #f0f0f2;
-  --text-secondary: #9da3af;
-  --accent-color: #4f46e5;
-  --accent-hover: #6366f1;
-  --card-bg: rgba(255, 255, 255, 0.03);
-  --card-hover: rgba(255, 255, 255, 0.06);
+  --bg-color: #f4f7fa;
+  --panel-bg: rgba(255, 255, 255, 0.95);
+  --panel-border: rgba(0, 0, 0, 0.1);
+  --text-primary: #1e293b;
+  --text-secondary: #64748b;
+  --accent-color: #3b82f6;
+  --accent-hover: #2563eb;
+  --card-bg: #ffffff;
+  --card-hover: #f8fafc;
   --error-bg: rgba(239, 68, 68, 0.1);
-  --error-text: #fca5a5;
-  --user-msg: rgba(79, 70, 229, 0.2);
-  --assistant-msg: rgba(255, 255, 255, 0.05);
+  --error-text: #ef4444;
+  --user-msg: rgba(59, 130, 246, 0.1);
+  --assistant-msg: #f1f5f9;
 }
 
 * {
@@ -72,6 +72,7 @@ body {
   bottom: 2rem;
   right: 2rem;
   width: 400px;
+  height: 620px;
   max-width: calc(100vw - 4rem);
   max-height: calc(100vh - 4rem);
   background: var(--panel-bg);
@@ -425,17 +426,17 @@ body {
   display: flex;
   gap: 0.75rem;
   padding: 1.25rem 1.5rem;
-  background: rgba(0, 0, 0, 0.2);
-  border-top: 1px solid var(--panel-border);
+  background: transparent;
+  border-top: 1px solid #e2e8f0;
 }
 
 .chat-input input {
   flex: 1;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid var(--panel-border);
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
   border-radius: 12px;
   padding: 0.75rem 1rem;
-  color: white;
+  color: #1e293b;
   font-family: inherit;
   font-size: 0.95rem;
   transition: border-color 0.2s, box-shadow 0.2s;
