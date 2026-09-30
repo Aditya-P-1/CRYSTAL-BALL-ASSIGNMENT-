@@ -1,11 +1,14 @@
 import axios from 'axios';
 
-// Dynamic API Base URL resolution from environment variable
+// Dynamic API Base URL resolution
 export const getBackendUrl = (): string => {
-  if (typeof window !== 'undefined' && (window as any).__ENV?.NEXT_PUBLIC_BACKEND_URL) {
-    return (window as any).__ENV.NEXT_PUBLIC_BACKEND_URL;
+  if (process.env.NEXT_PUBLIC_BACKEND_URL) {
+    return process.env.NEXT_PUBLIC_BACKEND_URL;
   }
-  return process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
+  if (typeof window !== 'undefined') {
+    return ''; // Relative path (/api/chat) using Next.js route proxy
+  }
+  return 'http://localhost:5000';
 };
 
 // Create Axios Instance
@@ -13,10 +16,9 @@ export const apiClient = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 10000, // 10s client timeout safety
+  timeout: 10000,
 });
 
-// Dynamic interceptor to always set current base URL
 apiClient.interceptors.request.use((config) => {
   config.baseURL = getBackendUrl();
   return config;
@@ -37,14 +39,14 @@ export interface ChatResponse {
 
 /**
  * Send chat request.
- * Handles both JSON structured responses (e.g. summary) and SSE token streams.
+ * Handles both JSON structured responses and SSE token streams with clean error formatting.
  */
 export async function streamChatAPI(
   payload: ChatPayload,
   onChunk: (chunk: string) => void
 ): Promise<ChatResponse | void> {
   const baseUrl = getBackendUrl();
-  const url = `${baseUrl}/api/chat`;
+  const url = baseUrl ? `${baseUrl}/api/chat` : '/api/chat';
 
   const response = await fetch(url, {
     method: 'POST',
@@ -59,10 +61,15 @@ export async function streamChatAPI(
       const parsed = JSON.parse(errorText);
       if (parsed.error) errorMessage = parsed.error;
     } catch {
-      if (errorText && errorText.trim()) errorMessage = errorText;
+      if (errorText && (errorText.includes('<html') || errorText.includes('<!DOCTYPE'))) {
+        errorMessage = 'The AI backend server is currently starting up or unavailable. Please try again in a few seconds.';
+      } else if (errorText && errorText.trim()) {
+        errorMessage = errorText.replace(/<[^>]*>?/gm, '').trim();
+      }
     }
     throw new Error(errorMessage);
   }
+
 
   const contentType = response.headers.get('content-type') || '';
   if (contentType.includes('application/json')) {
