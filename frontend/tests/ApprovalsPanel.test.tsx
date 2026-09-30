@@ -54,4 +54,22 @@ describe('ApprovalsPanel Component', () => {
     render(<ApprovalsPanel />);
     expect(screen.getByText(/Failed to reach AI/i)).toBeInTheDocument();
   });
+
+  it('renders streaming messages in the chat panel', () => {
+    (useChatStore as any).mockReturnValue({
+      messages: [
+        { id: '1', role: 'user', content: 'What is the highest priority?' },
+        { id: '2', role: 'assistant', content: 'The safety equipment PDF.' }
+      ],
+      isLoading: false,
+      error: null,
+      summaryData: null,
+      triggerAction: vi.fn(),
+      resetChat: vi.fn()
+    });
+
+    render(<ApprovalsPanel />);
+    expect(screen.getByText(/What is the highest priority\?/i)).toBeInTheDocument();
+    expect(screen.getByText(/The safety equipment PDF\./i)).toBeInTheDocument();
+  });
 });
