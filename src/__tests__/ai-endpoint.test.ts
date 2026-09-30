@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { POST } from '@/app/api/chat/route';
 import { NextRequest } from 'next/server';
 import http from 'http';
@@ -57,5 +58,5 @@ describe('AI Endpoint (Integration Test)', () => {
       .send({ action: 'summary', forceTimeout: true });
     
     expect(res.status).toBe(504);
-  });
+  }, 12000);
 });

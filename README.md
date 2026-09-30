@@ -1,36 +1,42 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Crystal Ball Command Centre
 
-## Getting Started
+This repository implements the Wave 2 Take-Home Assignment: an "Approvals" assistant integrated into a Next.js App Router application.
 
-First, run the development server:
+## Setup Instructions
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+1. Install dependencies:
+   ```bash
+   npm install
+   ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. Set your environment variables:
+   Create a `.env.local` file in the root and add your Anthropic API Key:
+   ```
+   ANTHROPIC_API_KEY=your-api-key-here
+   ```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+3. Run the development server:
+   ```bash
+   npm run dev
+   ```
+   Visit `http://localhost:3000` to interact with the dashboard.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+4. Run the tests:
+   ```bash
+   npm run test
+   ```
 
-## Learn More
+## Architecture & AI Judgment
 
-To learn more about Next.js, take a look at the following resources:
+### AI-Necessary vs. AI-Unnecessary
+**AI-Necessary:** The free-form chat ("Talk to me"), teaching a new operator ("Teach me"), and policy QA ("Help me") are inherently dynamic and depend on user input and specific contexts that can't be easily pre-programmed. AI shines here by processing natural language against the queue context and policy document (RAG). The structured summary is also well-suited for AI as it synthesizes and prioritizes complex, unstructured context (the queue).
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+**AI-Unnecessary:** Replaying a greeting ("Replay Greeting") does not need an LLM. While it can adapt to the queue size, this could easily be a templated string (e.g., `Hello! You have ${queue.length} items to review.`). Using an LLM for simple string interpolation is slow, costly, and unnecessary, but implemented here per the spec. Also, fetching the queue data and determining basic item counts should be handled by standard API queries, not an LLM.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Fallback Design
+Every LLM call is wrapped in a robust fallback mechanism. 
+1. **Timeouts**: We use an `AbortController` combined with a `setTimeout` (8 seconds). If the model hangs, the request aborts, catching the `AbortError` and returning a `504` or graceful error message.
+2. **Graceful Degradation**: If the API key is missing, rate-limited (429), or errors out, the UI catches it. Instead of breaking the page, it displays a friendly error state: "The AI assistant is temporarily unavailable. Please refer to manual documentation." 
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### One Thing I'd Do Differently
+With more time, I would implement **optimistic token caching** or a small local vector database (like `pgvector` or even a local SQLite VSS) for the "Help me" RAG feature. Currently, it passes the entire policy into the prompt window. While fine for 400 words, real-world policies are much larger. I'd also add more rigorous component tests covering the exact token-by-token streaming behavior using mocked streams.
